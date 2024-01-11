@@ -41,6 +41,7 @@ class Films {
     }
     create_card_details() {
         const btns = document.querySelectorAll('.details');
+        console.log(btns);
         btns.forEach(elem => {
             elem.addEventListener('click', (e) => {
                 fetch(`http://www.omdbapi.com/?apikey=${this.#api.apikey}&i=${e.target.dataset.id}&`)
@@ -128,13 +129,11 @@ class Films {
                 this.films_items.innerHTML = '';
                 response.Search.forEach(elem => this.create_card_film(elem));
                 this.create_message(`All results on request: ${this.#api.s}`);
-
                 if (response.totalResults > 10) {
                     new Pagination('.films_pagination', response.totalResults).init();
                 } else {
                     this.pagination.innerHTML = '';
                 }
-
                 this.create_card_details();
             })
             .catch(() => {
@@ -151,6 +150,7 @@ class Films {
                 this.films_items.innerHTML = '';
                 response.Search.forEach(elem => this.create_card_film(elem));
                 this.create_message(`All results on request: ${this.#api.s}`);
+                this.create_card_details();
             })
             .catch(() => {
                 this.create_message('No Movie Found :(');
