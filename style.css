@@ -5,9 +5,9 @@
 }
 
 :root {
-    --color1: #fdbfa8;
-    --color2: #fa8100;
-    --color3: #9a5200;
+    --color1: #d9d9d9;
+    --color2: #7a7a7a;
+    --color3: #414141;
 }
 
 body {
@@ -18,8 +18,8 @@ body {
 img {
     display: block;
     width: 100%;
-    max-width: 150px;
-    max-height: 150px;
+    max-width: 200px;
+    max-height: 300px;
 }
 
 h1,
@@ -68,6 +68,26 @@ h3 {
     flex-direction: column;
     justify-content: space-between;
 }
+.films_info {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr;
+}
+.films_poster {
+    min-height: 300px;
+}
+.films_information {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.films_information p {
+    font-weight: bold;
+    font-size: 12px;
+}
+.tag {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
 
 .pagination_items {
     justify-content: center;
@@ -104,6 +124,7 @@ select {
 
 button {
     background-color: var(--color2);
+    cursor: pointer;
 }
 
 button:hover {

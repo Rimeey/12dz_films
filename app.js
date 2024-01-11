@@ -4,25 +4,102 @@ class Films {
     #api = {
         apikey: 'ec9749b8'
     }
+
     constructor() {
         this.wrapper = document.querySelector('.films');
         this.form = this.wrapper.children[0].children[1];
         this.message = this.wrapper.children[1].children[0];
         this.films_items = this.wrapper.children[1].children[1];
         this.pagination = this.wrapper.children[1].children[2];
+        this.films_info = this.wrapper.children[1].children[3];
         this.page = 1;
-    }
-
-    set_page(page) {
-        this.page = page;
-        this.get_data_form();
-        this.request(this.get_url_for_query());
     }
 
     create_message(str) {
         let html = `<p>${str}</p>`
         this.message.textContent = '';
         this.message.innerHTML = html;
+    }
+    create_card_film(obj) {
+        if (obj.Poster === 'N/A') {
+            obj.Poster = 'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png'
+        }
+        let html = `
+        <div class="films_item">
+        <div class="films_poster">
+            <img src="${obj.Poster}" alt="">
+        </div>
+        <div class="films_description">
+            <p>${obj.Type}</p>
+            <h3>${obj.Title}</h3>
+            <p>${obj.Year}</p>
+            <button class="details" data-id="${obj.imdbID}">Details</button>
+        </div>
+        </div>
+        `
+        this.films_items.insertAdjacentHTML("afterbegin", html);
+    }
+    create_card_details() {
+        const btns = document.querySelectorAll('.details');
+        btns.forEach(elem => {
+            elem.addEventListener('click', (e) => {
+                fetch(`http://www.omdbapi.com/?apikey=${this.#api.apikey}&i=${e.target.dataset.id}&`)
+                    .then(response => { return response.json() })
+                    .then(response => {
+                        this.films_info.innerHTML = '';
+                        this.create_details(response);
+                    })
+                    .catch(() => {
+                        this.films_info.innerHTML = '<p>Failed, try again</p>';
+                    })
+            });
+        });
+    }
+    create_details(obj) {
+        if (obj.Poster === 'N/A') {
+            obj.Poster = 'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png'
+        }
+        let str = `
+    <div class="films_poster">
+    <img src="${obj.Poster}"
+        alt="">
+    </div>
+    <div class="films_information">
+        <div class="tag">
+            <p>Title:</p>
+            <p>${obj.Title}</p>
+        </div>
+        <div class="tag">
+            <p>Released:</p>
+            <p>${obj.Released}</p>
+        </div>
+        <div class="tag">
+            <p>Genre:</p>
+            <p>${obj.Genre}</p>
+        </div>
+        <div class="tag">
+            <p>Country:</p>
+            <p>${obj.Country}</p>
+        </div>
+        <div class="tag">
+            <p>Director:</p>
+            <p>${obj.Director}</p>
+        </div>
+        <div class="tag">
+            <p>Writer:</p>
+            <p>${obj.Writer}</p>
+        </div>
+        <div class="tag">
+            <p>Actors:</p>
+            <p>${obj.Actors}</p>
+        </div>
+        <div class="tag">
+            <p>Awards:</p>
+            <p>${obj.Awards}</p>
+        </div>
+    </div>
+            `
+        this.films_info.insertAdjacentHTML('beforeend', str);
     }
 
     get_data_form() {
@@ -43,42 +120,22 @@ class Films {
         return str + `page=${this.page}`;
     }
 
-    create_card_film(obj) {
-        if (obj.Poster === 'N/A') {
-            obj.Poster = 'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png'
-        }
-        let html = `
-        <div class="films_item">
-        <div class="films_poster">
-            <img src="${obj.Poster}" alt="">
-        </div>
-        <div class="films_description">
-            <p class="films_type">${obj.Type}</p>
-            <h3 class="films_title">${obj.Title}</h3>
-            <p class="films_year">${obj.Year}</p>
-            <button class="details">Details</button>
-        </div>
-        </div>
-        `
-        this.films_items.insertAdjacentHTML("afterbegin", html);
-        this.create_message(`All results on request: ${this.#api.s}`);
-    }
-
     get_request(url) {
         fetch(url)
             .then(response => { return response.json() })
             .then(response => {
-                if(response.totalResults > 10) {
+                this.message.innerHTML = '';
+                this.films_items.innerHTML = '';
+                response.Search.forEach(elem => this.create_card_film(elem));
+                this.create_message(`All results on request: ${this.#api.s}`);
+
+                if (response.totalResults > 10) {
                     new Pagination('.films_pagination', response.totalResults).init();
-                    this.message.innerHTML = '';
-                    this.films_items.innerHTML = '';
-                    response.Search.forEach(elem => this.create_card_film(elem));
                 } else {
                     this.pagination.innerHTML = '';
-                    this.message.innerHTML = '';
-                    this.films_items.innerHTML = '';
-                    response.Search.forEach(elem => this.create_card_film(elem));
                 }
+
+                this.create_card_details();
             })
             .catch(() => {
                 this.create_message('No Movie Found :(');
@@ -86,30 +143,39 @@ class Films {
             })
     }
 
-    request(url) {
+    page_request(url) {
         fetch(url)
-        .then(response => { return response.json() })
-        .then(response => {
-            this.message.innerHTML = '';
-            this.films_items.innerHTML = '';
-            response.Search.forEach(elem => this.create_card_film(elem));
-        })
-        .catch(() => {
-            this.create_message('No Movie Found :(');
-            this.films_items.innerHTML = '';
-        })
+            .then(response => { return response.json() })
+            .then(response => {
+                this.message.innerHTML = '';
+                this.films_items.innerHTML = '';
+                response.Search.forEach(elem => this.create_card_film(elem));
+                this.create_message(`All results on request: ${this.#api.s}`);
+            })
+            .catch(() => {
+                this.create_message('No Movie Found :(');
+                this.films_items.innerHTML = '';
+            })
     }
 
-    query_films_info(e) {
+    find_films(e) {
         e.preventDefault();
         this.page = 1;
         this.get_data_form();
         this.get_request(this.get_url_for_query());
+        this.films_info.innerHTML = '';
+    }
+
+    set_page(page) {
+        this.page = page;
+        this.get_data_form();
+        this.page_request(this.get_url_for_query());
+        this.films_info.innerHTML = '';
     }
 
     init() {
         this.create_message('Enter a movie title ^_^');
-        this.form.addEventListener('submit', this.query_films_info.bind(this));
+        this.form.addEventListener('submit', this.find_films.bind(this));
     }
 }
 
